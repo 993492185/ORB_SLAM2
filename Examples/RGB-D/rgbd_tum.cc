@@ -35,12 +35,14 @@ void LoadImages(const string &strAssociationFilename, vector<string> &vstrImageF
 
 int main(int argc, char **argv)
 {
+    // 判断输入参数个数
     if(argc != 5)
     {
         cerr << endl << "Usage: ./rgbd_tum path_to_vocabulary path_to_settings path_to_sequence path_to_association" << endl;
         return 1;
     }
-
+    
+    // step1. 读取图片及左右目关联信息
     // Retrieve paths to images
     vector<string> vstrImageFilenamesRGB;
     vector<string> vstrImageFilenamesD;
@@ -48,6 +50,7 @@ int main(int argc, char **argv)
     string strAssociationFilename = string(argv[4]);
     LoadImages(strAssociationFilename, vstrImageFilenamesRGB, vstrImageFilenamesD, vTimestamps);
 
+    // step2. 检查图片文件及输入文件的一致性
     // Check consistency in the number of images and depthmaps
     int nImages = vstrImageFilenamesRGB.size();
     if(vstrImageFilenamesRGB.empty())
@@ -61,6 +64,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    // step3. 创建SLAM对象,它是一个 ORB_SLAM2::System 类型变量ccc
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
     ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::RGBD,true);
 
@@ -71,11 +75,13 @@ int main(int argc, char **argv)
     cout << endl << "-------" << endl;
     cout << "Start processing sequence ..." << endl;
     cout << "Images in the sequence: " << nImages << endl << endl;
-
+    
+    // step4. 遍历图片,进行SLAM
     // Main loop
     cv::Mat imRGB, imD;
     for(int ni=0; ni<nImages; ni++)
     {
+        // step4.1. 读取图片c
         // Read image and depthmap from file
         imRGB = cv::imread(string(argv[3])+"/"+vstrImageFilenamesRGB[ni],CV_LOAD_IMAGE_UNCHANGED);
         imD = cv::imread(string(argv[3])+"/"+vstrImageFilenamesD[ni],CV_LOAD_IMAGE_UNCHANGED);
@@ -94,6 +100,7 @@ int main(int argc, char **argv)
         std::chrono::monotonic_clock::time_point t1 = std::chrono::monotonic_clock::now();
 #endif
 
+        // step4.2. 进行SLAM
         // Pass the image to the SLAM system
         SLAM.TrackRGBD(imRGB,imD,tframe);
 
@@ -107,6 +114,7 @@ int main(int argc, char **argv)
 
         vTimesTrack[ni]=ttrack;
 
+        // step4.3. 加载下一张图片
         // Wait to load the next frame
         double T=0;
         if(ni<nImages-1)
@@ -118,6 +126,7 @@ int main(int argc, char **argv)
             usleep((T-ttrack)*1e6);
     }
 
+    // step5. 停止SLAM
     // Stop all threads
     SLAM.Shutdown();
 

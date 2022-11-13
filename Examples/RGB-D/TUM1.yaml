@@ -4,6 +4,7 @@
 # Camera Parameters. Adjust them!
 #--------------------------------------------------------------------------------------------
 
+## 相机参数
 # Camera calibration and distortion parameters (OpenCV) 
 Camera.fx: 517.306408
 Camera.fy: 516.469215
@@ -37,7 +38,7 @@ DepthMapFactor: 5000.0
 #--------------------------------------------------------------------------------------------
 # ORB Parameters
 #--------------------------------------------------------------------------------------------
-
+## ORB特征提取参数
 # ORB Extractor: Number of features per image
 ORBextractor.nFeatures: 1000
 
